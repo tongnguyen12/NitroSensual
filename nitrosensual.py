@@ -122,32 +122,41 @@ class ProgressDialog(QDialog):
 def ensure_lhm_dll(show_progress=False):
     dll_name = "LibreHardwareMonitorLib.dll"
     dll_path = os.path.abspath(dll_name)
+    print(f"Checking for DLL at {dll_path}")
     progress = None
     app = QApplication.instance()
     if not os.path.exists(dll_path):
-        print("LibreHardwareMonitorLib.dll not found, downloading...")
+        print("DLL not found, starting download...")
         if show_progress and app is not None:
             progress = ProgressDialog("Resolving LibreHardwareMonitorLib.dll, please wait...")
             progress.show()
             app.processEvents()
         url = "https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases/download/v0.9.4/LibreHardwareMonitor-net472.zip"
-        with tempfile.TemporaryDirectory() as tmpdir:
-            zip_path = os.path.join(tmpdir, "lhm.zip")
-            print(f"Downloading {url} ...")
-            urllib.request.urlretrieve(url, zip_path)
-            print("Download complete. Extracting DLL...")
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                for member in zip_ref.namelist():
-                    if member.endswith(dll_name):
-                        zip_ref.extract(member, tmpdir)
-                        src = os.path.join(tmpdir, member)
-                        # Copy DLL to current directory
-                        with open(src, 'rb') as fsrc, open(dll_path, 'wb') as fdst:
-                            fdst.write(fsrc.read())
-                        print(f"Extracted {dll_name} to current directory.")
-                        break
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                zip_path = os.path.join(tmpdir, "lhm.zip")
+                print(f"Downloading {url} ...")
+                urllib.request.urlretrieve(url, zip_path)
+                print("Download complete. Extracting DLL...")
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    for member in zip_ref.namelist():
+                        if member.endswith(dll_name):
+                            zip_ref.extract(member, tmpdir)
+                            src = os.path.join(tmpdir, member)
+                            # Copy DLL to current directory
+                            with open(src, 'rb') as fsrc, open(dll_path, 'wb') as fdst:
+                                fdst.write(fsrc.read())
+                            print(f"Extracted {dll_name} to current directory.")
+                            break
+        except Exception as e:
+            print(f"Failed to download DLL: {e}")
+            if progress:
+                progress.close()
+            raise
         if progress:
             progress.close()
+    else:
+        print("DLL already present.")
     return dll_path
 
 def get_lhm_temps():
@@ -872,6 +881,7 @@ class MainWindow(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    ensure_lhm_dll(show_progress=True)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
