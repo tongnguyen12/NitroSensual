@@ -2,3 +2,4 @@ pythonnet
 elevate
 pywin32 
 PyQt5
+json
