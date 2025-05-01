@@ -9,6 +9,7 @@
 - CLI
 - Darkmode
 - Icon
+- Background proccess + tray icon
 
 ## Features
 
