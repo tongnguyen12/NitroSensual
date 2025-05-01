@@ -16,6 +16,8 @@ import clr
 import sys
 import os
 
+LHM_DLL_PATH = None
+
 elevate()
 
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
@@ -120,6 +122,9 @@ class ProgressDialog(QDialog):
         self.setFixedSize(350, 80)
 
 def ensure_lhm_dll(show_progress=False):
+    global LHM_DLL_PATH
+    if LHM_DLL_PATH is not None:
+        return LHM_DLL_PATH
     dll_name = "LibreHardwareMonitorLib.dll"
     dll_path = os.path.abspath(dll_name)
     print(f"Checking for DLL at {dll_path}")
@@ -157,6 +162,7 @@ def ensure_lhm_dll(show_progress=False):
             progress.close()
     else:
         print("DLL already present.")
+    LHM_DLL_PATH = dll_path
     return dll_path
 
 def get_lhm_temps():
