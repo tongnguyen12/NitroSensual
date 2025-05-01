@@ -20,7 +20,14 @@ LHM_DLL_PATH = None
 
 elevate()
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
+def get_app_dir():
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    else:
+        return os.path.dirname(os.path.abspath(__file__))
+
+APP_DIR = get_app_dir()
+CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 
 DEFAULT_CONFIG = {
     "auto_fan_config": [
@@ -126,7 +133,7 @@ def ensure_lhm_dll(show_progress=False):
     if LHM_DLL_PATH is not None:
         return LHM_DLL_PATH
     dll_name = "LibreHardwareMonitorLib.dll"
-    dll_path = os.path.abspath(dll_name)
+    dll_path = os.path.join(APP_DIR, dll_name)
     print(f"Checking for DLL at {dll_path}")
     progress = None
     app = QApplication.instance()
